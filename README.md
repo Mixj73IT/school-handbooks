@@ -1,48 +1,79 @@
-# School Handbooks
+# School Handbooks 📚
 
-Self-hosted handbook publishing for a private K-12 school. Maintain three
-handbooks — **Parent & Student**, **Employee**, and **Athletics** — with
-markdown editing, a live clickable table of contents, full-text search, and
-per-school-year versioning. Parents read a clean, searchable, read-only site;
-staff sign in to edit.
+Self-hosted handbook publishing for schools — three handbooks (**Parent & Student**,
+**Employee**, **Athletics**), markdown editing for staff, and a clean, searchable,
+read-only site for parents. Run it on a $5 server. Own it outright. No subscriptions.
 
-No database, no build step: content is plain markdown files on disk, so it
-backs up, syncs, and diffs like any other file.
+Built for a private K-12 school that was frustrated with expensive handbook SaaS
+(HTML-in-a-textbox editing, no collaboration) and Google Docs (no real TOC, weak
+formatting, poor search). This is the middle ground: content lives in **plain markdown
+files**, editing happens in a friendly web editor, and parents get a proper
+documentation site with a live clickable table of contents and full-text search.
 
-> 📖 **Complete usage documentation for staff lives in [docs/USAGE.md](docs/USAGE.md)**
-> — the parent-facing site, the editor, the school-year workflow, accounts,
-> printing/export, troubleshooting, and configuration.
+| Reading (what parents see) | Editing (what staff see) |
+| --- | --- |
+| ![Reading a handbook page](docs/screenshots/reading.png) | ![The markdown editor](docs/screenshots/editor.png) |
+
+| Home | Search |
+| --- | --- |
+| ![Home page](docs/screenshots/home.png) | ![Search results](docs/screenshots/search.png) |
+
+## Why this instead of a SaaS
+
+- **Collaborative enough** — every principal/admin gets a staff account; edits are
+  made in the browser with a toolbar, not raw HTML.
+- **A real TOC, not a workaround** — sidebar navigation per handbook, plus an
+  "on this page" outline with anchored headings on every page.
+- **Real search** — full-text across all handbooks, prefix matching ("attend" finds
+  "attendance"), title boosting, highlighted excerpts.
+- **Per-school-year versioning** — duplicate this year into next in one click, edit
+  the draft all summer, publish in August. Old years stay browsable.
+- **You own it** — no database, no vendor, no per-editor pricing. Every page is a
+  markdown file under `data/`; back it up by copying the folder.
 
 ## Quick start
 
+Requires Node.js 18+.
+
 ```bash
 npm install
-npm run seed        # creates users + sample content on first run
-npm start           # http://localhost:4321
+npm run seed        # creates the admin user + 9 sample pages (first run only)
+npm start           # → http://localhost:4321
 ```
 
-The first `npm run seed` prints a generated password for the `admin` user
-(override with `ADMIN_PASSWORD` before first run). A sample `editor` user is
-also created — change or remove both before real use.
+The seed prints a generated password for the `admin` user (set `ADMIN_PASSWORD`
+before first run to choose your own). A sample `editor` account is also created —
+change or remove both before real use.
 
-## Features
+## The yearly workflow
 
-- **Three handbooks** (parent/student, employee, athletics), each a separate
-  section with its own table of contents and public URL space
-- **Markdown editor** with a formatting toolbar (headings, bold/italic,
-  lists, quotes, tables, links) — no HTML required
-- **Live clickable TOC** in the sidebar plus an "on this page" outline with
-  anchored headings on long pages
-- **Full-text search** across all handbooks with highlighted excerpts,
-  prefix matching ("attend" finds "attendance"), and title boosting
-- **School-year versioning** — duplicate this year into next, edit over the
-  summer as a draft, then flip it to published. Old years stay browsable.
-- **Public read-only site** for parents — no accounts, mobile friendly,
-  print stylesheet, and a one-file HTML export for offline/PDF archiving
-- **Staff roles** — `admin` manages users, years, and settings; `editor`
-  writes content
-- **Durable storage** — every page is a markdown file under `data/`; back it
-  up by copying the folder
+1. **Spring:** click **Duplicate → 2027-2028**. Every page is copied as an
+   unpublished draft.
+2. **Summer:** edit the draft — dates, policies, new sections. Parents keep seeing
+   last year's published version.
+3. **August:** click **Publish**. The new year goes live; the old year remains
+   browsable via the year switcher in the header.
+
+## Printing and archiving
+
+- `/print/<year>` — the whole year on one page with print styling; browser
+  **Print → Save as PDF** gives you the official archive.
+- `/export/<year>` — the same thing as a single portable HTML file, for emailing
+  or dropping into a website archive.
+- Any individual page prints cleanly on its own (navigation is stripped).
+
+## Configuration
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `PORT` | `4321` | HTTP port |
+| `HOST` | `0.0.0.0` | Bind address |
+| `DATA_DIR` | `./data` | Where all content and accounts live |
+| `SESSION_SECRET` | random per start | **Set in production** so logins survive restarts |
+| `SESSION_MAX_AGE_HOURS` | `12` | Staff session lifetime |
+| `ADMIN_PASSWORD` | random, printed once | Password for the seeded `admin` (first run only) |
+| `SCHOOL_NAME` / `SITE_NAME` | sample values | Header/footer branding |
+| `NODE_ENV` | — | `production` enables the secure session cookie |
 
 ## How content is stored
 
@@ -53,85 +84,83 @@ data/
     2026-2027/
       settings.json                     # title, published, archived
       handbooks/
-        parent-student/0001-<id>.md     # one file per page
+        parent-student/0001-<id>.md     # one markdown file per page
         employee/0002-<id>.md
         athletics/0001-<id>.md
 ```
 
-Each page file is markdown with a two-line front matter (title, slug). The
-slug is unique across the whole year and drives the public URL
-(`/handbook/athletics/eligibility`), so links stay stable. Ordering is a
-numeric prefix on the filename; the dashboard's ↑↓ buttons swap it for you.
+Each page is markdown with a two-line front-matter block (title, slug). The slug is
+unique within a year and drives the public URL (`/handbook/athletics/eligibility`), so
+links stay stable. Ordering is a numeric filename prefix — managed by the dashboard's
+↑↓ buttons.
 
-## Year workflow
-
-1. In spring, open the dashboard and click **Duplicate → 2027-2028**.
-2. The copy starts **unpublished** — only staff can preview it.
-3. Edit pages all summer (add, reorder, rewrite).
-4. In August, click **Publish**. Parents immediately see the new year; the
-   old year remains available via the year switcher in the header.
-
-## Configuration (environment variables)
-
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `PORT` | `4321` | HTTP port |
-| `DATA_DIR` | `./data` | Where all content lives |
-| `SESSION_SECRET` | random | Set this in production for stable logins |
-| `SESSION_MAX_AGE_HOURS` | `12` | Admin session lifetime |
-| `ADMIN_PASSWORD` | random | Seed password for the first admin |
-| `SCHOOL_NAME` / `SITE_NAME` | sample values | Header branding |
+**Backing up is copying `data/`.** Restoring is copying it back. Diffs, sync, and
+git all work naturally.
 
 ## Deployment
 
-### Docker
+**Docker:**
 
 ```bash
 SESSION_SECRET=some-long-random-string docker compose up -d --build
 ```
 
-The compose file mounts a `handbook-data` volume, so content survives
-rebuilds. Behind a reverse proxy, terminate TLS there and forward to :4321.
+Content persists in the `handbook-data` volume. Put nginx/Caddy (or any TLS proxy)
+in front for HTTPS — the app also sends a strict Content-Security-Policy,
+`X-Content-Type-Options`, and `Referrer-Policy` on every response.
 
-### Bare Node
+**Bare Node:**
 
 ```bash
 npm ci --omit=dev
-SESSION_SECRET=... PORT=80 node src/server.js
+NODE_ENV=production SESSION_SECRET=... PORT=80 node src/server.js
 ```
 
-Run behind nginx/Apache with TLS for anything internet-facing. Set
-`NODE_ENV=production` to enable the secure session cookie (or
-`COOKIE_INSECURE=1` if you must serve plain HTTP).
+## Documentation
+
+**The complete staff guide — editing, the year workflow, accounts, printing,
+troubleshooting — lives in [docs/USAGE.md](docs/USAGE.md).**
 
 ## Development
 
 ```bash
-npm run dev                # restart on file changes
-npm test                   # 13 integration tests (public, admin, search, years)
-npm run audit:responsive   # layout audit at 6 device widths (needs local Chrome/Edge)
+npm test                  # 13 integration tests (public, admin, search, years)
+npm run audit:responsive  # layout audit at 6 device widths (needs local Chrome/Edge)
+npm run dev               # restart on file changes
 ```
 
-Tests use a throwaway data directory and do not touch `./data`.
-
-The responsive audit drives headless Chrome over puppeteer-core and checks
-every key page (public + admin, logged in) at 360–1280px for horizontal
-overflow, offending elements, and sticky-sidebar regressions. It exits 1 if
-any problem is found, so it can gate CI. Set `AUDIT_ADMIN_PASS` to include
-the admin area, `BROWSER_PATH` for a non-standard browser location.
+Tests use a throwaway data directory and never touch `./data`. The responsive audit
+drives headless Chrome via puppeteer-core, checks every key page (public and admin)
+from 360px phones to 1280px desktops for horizontal overflow and layout bugs, and
+exits non-zero if anything is wrong — ready to gate CI.
 
 ## Project layout
 
 ```
-config.js              env-driven settings, path bootstrap
+config.js              env-driven settings
 seed.js                idempotent first-run seeding
-src/server.js          express app + middleware wiring
-src/content.js         markdown content store, year mgmt, HTML export
+src/server.js          express app + middleware (security headers, sessions)
+src/content.js         markdown content store, year management, HTML export
 src/search.js          in-memory inverted-index search
 src/users.js           user store, bcrypt auth
 src/middleware.js      auth guards + CSRF
 src/routes/            public, auth, admin routers
 views/                 EJS templates (public site + admin)
-public/                css and the editor toolbar script
-test/app.test.js       node:test integration suite
+public/                css + small client scripts (editor toolbar, flash, year switcher)
+scripts/               responsive layout audit
+test/app.test.js       integration suite
+docs/USAGE.md          complete staff documentation
 ```
+
+## Security notes
+
+- Passwords are bcrypt-hashed; sessions are httpOnly SameSite cookies; every form
+  carries a CSRF token.
+- Draft years are hidden from public navigation but not password-protected at their
+  URL — don't stage confidential material in a draft on a public deployment.
+- Runs behind any reverse proxy; terminate TLS there (no HSTS is sent by the app
+  itself, so add it at the proxy).
+
+## License
+
+[MIT](LICENSE) — use it, fork it, run your school on it.
