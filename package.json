@@ -1,0 +1,27 @@
+{
+  "name": "school-handbooks",
+  "version": "1.0.0",
+  "description": "Self-hosted handbook publishing for a private K-12 school: parent/student, employee, and athletics handbooks with markdown editing, live TOC, full-text search, and school-year versioning.",
+  "main": "src/server.js",
+  "scripts": {
+    "seed": "node seed.js",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test",
+    "audit:responsive": "node scripts/responsive-audit.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.2",
+    "marked": "^16.4.1"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.11.0"
+  }
+}

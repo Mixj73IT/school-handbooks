@@ -1,0 +1,9 @@
+<%- include('../partials/header') %>
+<section class="card narrow-card">
+  <span class="handbook-emoji big"><%= handbook.emoji %></span>
+  <h1><%= handbook.name %></h1>
+  <p class="muted"><%= year.title %></p>
+  <p>No pages have been published in this handbook yet. Staff can <a href="/auth/login">sign in</a> to add content.</p>
+  <a class="btn" href="/">← All handbooks</a>
+</section>
+<%- include('../partials/footer') %>

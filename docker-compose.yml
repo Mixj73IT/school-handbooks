@@ -1,0 +1,16 @@
+services:
+  handbooks:
+    build: .
+    container_name: school-handbooks
+    ports:
+      - "4321:4321"
+    volumes:
+      - handbook-data:/app/data
+    environment:
+      - SESSION_SECRET=${SESSION_SECRET:-change-me-in-production}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      - PORT=4321
+    restart: unless-stopped
+
+volumes:
+  handbook-data:

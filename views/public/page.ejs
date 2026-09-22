@@ -1,0 +1,49 @@
+<%- include('../partials/header') %>
+<div class="page-layout">
+  <aside class="toc-sidebar no-print">
+    <nav class="toc" aria-label="Handbook contents">
+      <h2 class="toc-title"><a href="/handbook/<%= handbook.id %>"><%= handbook.emoji %> <%= handbook.name %></a></h2>
+      <ol class="toc-list">
+        <% pages.forEach((p) => { %>
+        <li><a class="<%= p.id === page.id ? 'active' : '' %>" href="/handbook/<%= handbook.id %>/<%= p.slug %>"><%= p.title %></a></li>
+        <% }) %>
+      </ol>
+    </nav>
+    <% if (typeof pageToc !== 'undefined' && pageToc.length) { %>
+    <nav class="toc page-toc" aria-label="On this page">
+      <h2 class="toc-title">On this page</h2>
+      <ol class="toc-list mini">
+        <% pageToc.forEach((h) => { %>
+        <li class="level-<%= h.level %>"><a href="#<%= h.id %>"><%= h.text %></a></li>
+        <% }) %>
+      </ol>
+    </nav>
+    <% } %>
+    <nav class="toc" aria-label="Other handbooks">
+      <h2 class="toc-title">Other handbooks</h2>
+      <ol class="toc-list mini">
+        <% Object.entries(allHandbooks).forEach(([id, meta]) => { if (id !== handbook.id) { %>
+        <li><a href="/handbook/<%= id %>"><%= meta.emoji %> <%= meta.name %></a></li>
+        <% } }) %>
+      </ol>
+    </nav>
+  </aside>
+
+  <article class="handbook-page">
+    <nav class="breadcrumbs muted">
+      <a href="/">Handbooks</a> ›
+      <a href="/handbook/<%= handbook.id %>"><%= handbook.name %></a> ›
+      <span><%= page.title %></span>
+    </nav>
+    <h1><%= page.title %></h1>
+    <p class="page-meta muted"><%= year.title %> · <%= handbook.name %></p>
+    <div class="markdown-body">
+      <%- html %>
+    </div>
+    <nav class="pager no-print">
+      <% if (prevPage) { %><a class="btn" href="/handbook/<%= handbook.id %>/<%= prevPage.slug %>">← <%= prevPage.title %></a><% } else { %><span></span><% } %>
+      <% if (nextPage) { %><a class="btn" href="/handbook/<%= handbook.id %>/<%= nextPage.slug %>"><%= nextPage.title %> →</a><% } %>
+    </nav>
+  </article>
+</div>
+<%- include('../partials/footer') %>

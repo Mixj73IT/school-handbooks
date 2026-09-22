@@ -1,0 +1,72 @@
+<%- include('../partials/header', { adminCss: true, hideSearch: true }) %>
+
+<div class="admin-header-row">
+  <h1><%= page ? 'Edit page' : 'New page' %></h1>
+  <span class="year-badge"><%= year.title %></span>
+</div>
+
+<% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+
+<form method="post" action="<%= page ? '/admin/pages/' + handbook.id + '/' + page.id + '/edit' : '/admin/pages/' + handbook.id + '/new' %>">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+
+  <div class="editor-layout">
+    <div>
+      <section class="card">
+        <div class="field">
+          <label for="page-title">Page title</label>
+          <input id="page-title" name="title" type="text" value="<%= page ? page.title : '' %>" required>
+        </div>
+
+        <div class="editor-toolbar" id="editor-toolbar">
+          <button data-md="h2" title="Section heading">H2</button>
+          <button data-md="h3" title="Sub-heading">H3</button>
+          <button data-md="bold" title="Bold"><strong>B</strong></button>
+          <button data-md="italic" title="Italic"><em>I</em></button>
+          <button data-md="list" title="Bullet list">• list</button>
+          <button data-md="numlist" title="Numbered list">1. list</button>
+          <button data-md="quote" title="Quote">❝</button>
+          <button data-md="table" title="Table">table</button>
+          <button data-md="link" title="Link">🔗</button>
+        </div>
+
+        <div class="field">
+          <label for="page-body">Content (markdown)</label>
+          <textarea id="page-body" name="body" rows="22" style="min-height:420px; font-family: ui-monospace, Consolas, monospace; font-size:14px;"><%= page ? page.body : '' %></textarea>
+          <div class="editor-hint">
+            <strong>## Heading</strong> makes a section, **bold**, *italic*, - bullets, [link](https://…),
+            ![image](https://…), | tables | like | this |. Leave the slug blank and it's generated from the title.
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="sticky-panel">
+      <section class="card">
+        <h2 style="margin-top:0;">Publishing</h2>
+        <div class="field">
+          <label for="page-slug">URL slug</label>
+          <input id="page-slug" name="slug" type="text" value="<%= page ? page.slug : '' %>" placeholder="auto-generated from title">
+          <div class="hint">Public URL: /handbook/<%= handbook.id %>/<%= page ? page.slug : 'your-slug' %>. Must be unique across all handbooks this year.</div>
+        </div>
+        <div class="field">
+          <label for="page-order">Position in handbook</label>
+          <input id="page-order" name="order" type="number" min="1" value="<%= page ? page.order : '' %>" placeholder="auto (last)">
+          <div class="hint">Lower numbers appear first in the table of contents. You can also reorder with the ↑↓ buttons on the dashboard.</div>
+        </div>
+        <button class="btn btn-primary" type="submit"><%= page ? 'Save changes' : 'Create page' %></button>
+        <a class="btn btn-ghost" href="/admin">Cancel</a>
+      </section>
+      <% if (page) { %>
+      <section class="card">
+        <h2 style="margin-top:0;">Preview</h2>
+        <p><a class="btn btn-ghost" href="/handbook/<%= handbook.id %>/<%= page.slug %>" target="_blank">Open public page ↗</a></p>
+        <p class="flash-note">The public view updates the moment you save.</p>
+      </section>
+      <% } %>
+    </div>
+  </div>
+</form>
+
+<script src="/js/admin-editor.js"></script>
+<%- include('../partials/footer') %>

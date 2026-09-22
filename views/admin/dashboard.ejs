@@ -1,0 +1,210 @@
+<%- include('../partials/header', { adminCss: true, hideSearch: true }) %>
+
+<div class="admin-header-row">
+  <h1>Handbook dashboard</h1>
+  <% if (years.length) { %>
+  <form method="post" action="/admin/select-year" class="year-switcher">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <label for="admin-year">Working on</label>
+    <select id="admin-year" name="yearId">
+      <% years.forEach((y) => { %>
+      <option value="<%= y.yearId %>" <%= activeYear && activeYear.yearId === y.yearId ? 'selected' : '' %>><%= y.title %><%= y.published ? '' : ' (draft)' %></option>
+      <% }) %>
+    </select>
+    <button class="btn btn-small" type="submit">Switch</button>
+  </form>
+  <% } %>
+</div>
+
+<% if (yearError) { %><div class="alert alert-error"><%= yearError %></div><% } %>
+<% if (userSuccess) { %><div class="alert alert-success"><%= userSuccess %></div><% } %>
+<% if (userError) { %><div class="alert alert-error"><%= userError %></div><% } %>
+<% if (settingsSaved) { %><div class="alert alert-success"><%= settingsSaved %></div><% } %>
+<% if (params.created) { %><div class="alert alert-success" data-autohide>✓ School year <%= params.created %> created. It starts unpublished — add pages, then hit Publish when it's ready.</div><% } %>
+<% if (params.duplicated) { %><div class="alert alert-success" data-autohide>✓ Copied every page into <strong><%= params.duplicated %></strong>. The copy is a draft — edit freely, then publish.</div><% } %>
+<% if (params.yearUpdated) { %><div class="alert alert-success" data-autohide>✓ Year <%= params.yearUpdated %>. <%= params.yearUpdated === 'published' ? 'Parents can see it now.' : 'It is hidden from the public site.' %></div><% } %>
+<% if (params.yearDeleted) { %><div class="alert alert-success" data-autohide>✓ School year deleted.</div><% } %>
+
+<% if (!years.length) { %>
+<section class="card welcome-card">
+  <h2>👋 Welcome to your handbooks hub</h2>
+  <p>Three handbooks — <strong>Parent &amp; Student</strong>, <strong>Employee</strong>, and <strong>Athletics</strong> — live here, one school year at a time. Getting started takes about two minutes:</p>
+  <ol class="welcome-steps">
+    <li><strong>Create your first school year</strong> with the form on the right (something like <code>2026-2027</code>).</li>
+    <li>Use the <strong>+ New page</strong> buttons to add your first pages — each page is one section of a handbook.</li>
+    <li>When the year is ready, flip it to <strong>Publish</strong> and parents see it immediately.</li>
+  </ol>
+  <p class="flash-note">Next spring, use <strong>Duplicate</strong> to roll everything into the next year as an editable draft.</p>
+</section>
+<% } %>
+
+<div class="admin-grid">
+  <div>
+    <% handbooks.forEach((hb) => { %>
+    <section class="card">
+      <div class="admin-header-row">
+        <h2 style="margin:0;"><%= hb.emoji %> <%= hb.name %></h2>
+        <a class="btn btn-small btn-primary" href="/admin/pages/<%= hb.id %>/new">+ New page</a>
+      </div>
+      <% if (hb.pages.length) { %>
+      <table class="table">
+        <tr><th></th><th>Page</th><th style="text-align:right;">Actions</th></tr>
+        <% hb.pages.forEach((p) => { %>
+        <tr>
+          <td class="page-order-num"><%= p.order %></td>
+          <td>
+            <div class="page-list-row">
+              <div>
+                <a class="page-title-link" href="/admin/pages/<%= hb.id %>/<%= p.id %>/edit"><%= p.title %></a>
+                <div class="page-slug">/handbook/<%= hb.id %>/<%= p.slug %></div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="actions">
+              <form method="post" action="/admin/pages/<%= hb.id %>/<%= p.id %>/move" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <input type="hidden" name="direction" value="up">
+                <button class="btn btn-small btn-ghost" title="Move up" <%= p.order === hb.pages[0].order ? 'disabled' : '' %>>↑</button>
+              </form>
+              <form method="post" action="/admin/pages/<%= hb.id %>/<%= p.id %>/move" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <input type="hidden" name="direction" value="down">
+                <button class="btn btn-small btn-ghost" title="Move down" <%= p.order === hb.pages[hb.pages.length - 1].order ? 'disabled' : '' %>>↓</button>
+              </form>
+              <a class="btn btn-small btn-ghost" href="/handbook/<%= hb.id %>/<%= p.slug %>" target="_blank">View</a>
+              <form method="post" action="/admin/pages/<%= hb.id %>/<%= p.id %>/delete" class="inline-form" onsubmit="return confirm('Delete “<%= p.title %>”? This cannot be undone.')">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <button class="btn btn-small btn-danger">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </table>
+      <% } else { %>
+      <p class="muted">No pages yet. Create the first page for this handbook.</p>
+      <% } %>
+    </section>
+    <% }) %>
+  </div>
+
+  <div class="sticky-panel">
+    <section class="card">
+      <h2 style="margin-top:0;">School years</h2>
+      <table class="table">
+        <% years.forEach((y) => { %>
+        <tr>
+          <td>
+            <strong><%= y.title %></strong>
+            <div class="page-slug">
+              <span class="year-badge <%= y.published ? '' : 'draft' %>"><%= y.published ? 'published' : 'draft' %></span>
+              <% if (y.archived) { %><span class="year-badge archived">archived</span><% } %>
+            </div>
+          </td>
+          <td>
+            <div class="actions">
+              <form method="post" action="/admin/years/<%= y.yearId %>/update" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <input type="hidden" name="published" value="<%= y.published ? '0' : '1' %>">
+                <button class="btn btn-small btn-ghost"><%= y.published ? 'Unpublish' : 'Publish' %></button>
+              </form>
+              <form method="post" action="/admin/years/<%= y.yearId %>/duplicate" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <button class="btn btn-small btn-ghost" title="Copy every page into next school year">Duplicate → <%= (parseInt(y.yearId.slice(0, 4), 10) + 1) %>-<%= (parseInt(y.yearId.slice(5), 10) + 1) %></button>
+              </form>
+              <% if (y.yearId !== activeYear.yearId) { %>
+              <form method="post" action="/admin/years/<%= y.yearId %>/delete" class="inline-form" onsubmit="return confirm('Delete <%= y.title %> and ALL of its pages? This cannot be undone.')">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <button class="btn btn-small btn-danger" title="Delete year">×</button>
+              </form>
+              <% } %>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </table>
+      <form method="post" action="/admin/years">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <div class="field">
+          <label for="new-year-id">Add a new school year</label>
+          <input id="new-year-id" name="yearId" type="text" placeholder="e.g. 2027-2028" pattern="\d{4}-\d{4}" required>
+        </div>
+        <button class="btn" type="submit">Create year</button>
+      </form>
+      <p class="flash-note">Tip: duplicate last year into the new year, edit all summer, then flip it to “published” in August.</p>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top:0;">Staff access</h2>
+      <table class="table">
+        <% allUsers.forEach((u) => { %>
+        <tr>
+          <td>
+            <strong><%= u.name %></strong>
+            <div class="page-slug"><%= u.username %> · <%= u.role %></div>
+          </td>
+          <td>
+            <div class="actions">
+              <form method="post" action="/admin/users/<%= u.id %>/update" class="inline-form user-row">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <select name="role">
+                  <option value="editor" <%= u.role === 'editor' ? 'selected' : '' %>>editor</option>
+                  <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>admin</option>
+                </select>
+                <button class="btn btn-small btn-ghost">Save</button>
+              </form>
+              <% if (u.id !== user.id) { %>
+              <form method="post" action="/admin/users/<%= u.id %>/delete" class="inline-form" onsubmit="return confirm('Remove <%= u.name %>?')">
+                <input type="hidden" name="_csrf" value="<%= csrf %>">
+                <button class="btn btn-small btn-danger">×</button>
+              </form>
+              <% } %>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </table>
+      <form method="post" action="/admin/users">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <div class="field">
+          <label for="new-name">Add a staff editor</label>
+          <input id="new-name" name="name" type="text" placeholder="Full name" required>
+        </div>
+        <div class="field">
+          <input name="username" type="text" placeholder="username" required>
+        </div>
+        <div class="field">
+          <input name="password" type="password" placeholder="Temporary password (8+ chars)" minlength="8" required>
+        </div>
+        <div class="field">
+          <select name="role">
+            <option value="editor">Editor — edit pages</option>
+            <option value="admin">Admin — also manage users &amp; years</option>
+          </select>
+        </div>
+        <button class="btn" type="submit">Create user</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top:0;">Settings &amp; export</h2>
+      <form method="post" action="/admin/settings">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <div class="field">
+          <label for="school-name">School name (header &amp; footer)</label>
+          <input id="school-name" name="schoolName" type="text" value="<%= settings %>">
+        </div>
+        <button class="btn" type="submit">Save settings</button>
+      </form>
+      <hr>
+      <% if (activeYear) { %>
+      <p><a class="btn btn-ghost" href="/print/<%= activeYear.yearId %>" target="_blank">Print / PDF view</a></p>
+      <p><a class="btn btn-ghost" href="/export/<%= activeYear.yearId %>">Download single-file HTML</a></p>
+      <p><a class="btn btn-ghost" href="/" target="_blank">Open public site ↗</a></p>
+      <% } %>
+    </section>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

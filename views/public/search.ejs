@@ -1,0 +1,32 @@
+<%- include('../partials/header') %>
+<section class="card">
+  <h1>Search</h1>
+  <form method="get" action="/search" class="search-again">
+    <input type="search" name="q" value="<%= q %>" placeholder="Search handbooks…" aria-label="Search handbooks">
+    <button class="btn btn-primary" type="submit">Search</button>
+  </form>
+
+  <% if (q) { %>
+  <p class="muted"><%= results.length %> result<%= results.length === 1 ? '' : 's' %> for “<%= q %>” in <%= year ? year.title : 'the current year' %>.</p>
+  <% } else { %>
+  <p class="muted">Search every page of all three handbooks at once — try <a href="/search?q=attendance">attendance</a>, <a href="/search?q=leave">leave</a>, or <a href="/search?q=physical">physical</a>.</p>
+  <% } %>
+
+  <div class="search-results">
+    <% results.forEach((r) => { %>
+    <a class="search-result" href="/handbook/<%= r.handbookId %>/<%= r.slug %>">
+      <span class="handbook-badge"><%= r.handbookEmoji %> <%= r.handbookName %></span>
+      <span class="result-title"><%= r.title %></span>
+      <span class="result-excerpt"><%- r.excerptHtml %></span>
+    </a>
+    <% }) %>
+    <% if (q && !results.length) { %>
+    <div class="empty-state">
+      <p class="empty-title">Nothing matched “<%= q %>”.</p>
+      <p class="muted">Try a shorter or more general word — “dress” instead of “dress code”, or “absence” instead of “absences policy”. Search matches sections and headings, not full sentences.</p>
+      <p><a class="btn btn-ghost" href="/">Browse the handbooks instead →</a></p>
+    </div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

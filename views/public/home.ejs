@@ -1,0 +1,41 @@
+<%- include('../partials/header', { hideSearch: true }) %>
+
+<section class="hero">
+  <h1><%= schoolName %> Handbooks</h1>
+  <p class="hero-sub"><%= year.title %> — everything parents, students, and staff need in one searchable place.</p>
+  <form class="hero-search" method="get" action="/search">
+    <input type="search" name="q" placeholder="Search the handbooks… (try “attendance”)" aria-label="Search handbooks" autofocus>
+    <button class="btn btn-primary" type="submit">Search</button>
+  </form>
+</section>
+
+<div class="handbook-grid">
+  <% handbooks.forEach((hb) => { %>
+  <section class="card handbook-card">
+    <div class="handbook-card-head">
+      <span class="handbook-emoji"><%= hb.emoji %></span>
+      <h2><a href="/handbook/<%= hb.id %>"><%= hb.name %></a></h2>
+    </div>
+    <% if (hb.pages.length) { %>
+    <ol class="handbook-card-toc">
+      <% hb.pages.slice(0, 7).forEach((p) => { %>
+      <li><a href="/handbook/<%= hb.id %>/<%= p.slug %>"><%= p.title %></a></li>
+      <% }) %>
+    </ol>
+    <% if (hb.pages.length > 7) { %>
+    <p class="muted">…and <%= hb.pages.length - 7 %> more</p>
+    <% } %>
+    <a class="btn" href="/handbook/<%= hb.id %>">Open handbook →</a>
+    <% } else { %>
+    <p class="muted">This handbook is being updated right now. Check back soon, or <a href="/search">search last year's content</a>.</p>
+    <% } %>
+  </section>
+  <% }) %>
+</div>
+
+<p class="print-note">
+  Need a paper copy? <a href="/print/<%= year.yearId %>" target="_blank" rel="noopener">Open the printable version</a>
+  (then use your browser's Print → Save as PDF).
+</p>
+
+<%- include('../partials/footer') %>

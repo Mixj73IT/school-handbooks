@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= (typeof title !== 'undefined' && title) ? title + ' · ' : '' %><%= siteName %></title>
+<link rel="stylesheet" href="/css/site.css">
+<% if (typeof adminCss !== 'undefined' && adminCss) { %><link rel="stylesheet" href="/css/admin.css"><% } %>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-row">
+    <a class="brand" href="/">
+      <span class="brand-mark">📚</span>
+      <span class="brand-text">
+        <span class="brand-school"><%= schoolName %></span>
+        <span class="brand-site"><%= siteName %></span>
+      </span>
+    </a>
+    <nav class="header-nav">
+      <% if (typeof years !== 'undefined' && years && years.length) { %>
+      <form method="get" class="year-switcher" id="year-form">
+        <label for="year-select">Year</label>
+        <select id="year-select" name="year">
+          <% years.forEach((y) => { %>
+          <option value="<%= y.yearId %>" <%= (typeof year !== 'undefined' && year && year.yearId === y.yearId) ? 'selected' : '' %>><%= y.title %><%= y.published ? '' : ' (draft)' %></option>
+          <% }) %>
+        </select>
+      </form>
+      <script src="/js/year-switcher.js" defer></script>
+      <% } %>
+      <% if (typeof hideSearch === 'undefined' || !hideSearch) { %>
+      <form class="header-search" method="get" action="/search">
+        <input type="search" name="q" value="<%= typeof q !== 'undefined' ? q : '' %>" placeholder="Search handbooks…" aria-label="Search handbooks">
+      </form>
+      <% } %>
+      <% if (user) { %>
+      <a class="nav-link" href="/admin">Admin</a>
+      <a class="nav-link" href="/auth/password">Password</a>
+      <form method="post" action="/auth/logout" class="inline-form">
+        <input type="hidden" name="_csrf" value="<%= typeof csrf !== 'undefined' ? csrf : '' %>">
+        <button type="submit" class="nav-link nav-button">Sign out</button>
+      </form>
+      <% } else { %>
+      <a class="nav-link" href="/auth/login">Sign in</a>
+      <% } %>
+    </nav>
+  </div>
+</header>
+<script src="/js/flash.js" defer></script>
+<main class="container main-content">

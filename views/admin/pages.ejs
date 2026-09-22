@@ -1,0 +1,47 @@
+<%- include('../partials/header', { adminCss: true, hideSearch: true }) %>
+
+<div class="admin-header-row">
+  <h1><%= handbook.emoji %> <%= handbook.name %></h1>
+  <span class="year-badge"><%= year.title %></span>
+</div>
+
+<% if (params.created) { %><div class="alert alert-success" data-autohide>✓ “<%= params.created %>” created. You can keep editing it from the list below.</div><% } %>
+<% if (params.updated) { %><div class="alert alert-success" data-autohide>✓ “<%= params.updated %>” saved — the public page is updated instantly.</div><% } %>
+<% if (params.deleted) { %><div class="alert alert-success" data-autohide>✓ “<%= params.deleted %>” deleted.</div><% } %>
+
+<% if (pages.length) { %>
+<section class="card">
+  <table class="table">
+    <tr><th>#</th><th>Page</th><th style="text-align:right;">Actions</th></tr>
+    <% pages.forEach((p, i) => { %>
+    <tr>
+      <td class="page-order-num"><%= i + 1 %></td>
+      <td>
+        <a class="page-title-link" href="/admin/pages/<%= handbook.id %>/<%= p.id %>/edit"><%= p.title %></a>
+        <div class="page-slug">/handbook/<%= handbook.id %>/<%= p.slug %></div>
+      </td>
+      <td>
+        <div class="actions">
+          <a class="btn btn-small btn-primary" href="/admin/pages/<%= handbook.id %>/<%= p.id %>/edit">Edit</a>
+          <a class="btn btn-small btn-ghost" href="/handbook/<%= handbook.id %>/<%= p.slug %>" target="_blank">View</a>
+          <form method="post" action="/admin/pages/<%= handbook.id %>/<%= p.id %>/delete" class="inline-form" onsubmit="return confirm('Delete “<%= p.title %>”?')">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="btn btn-small btn-danger">Delete</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+    <% }) %>
+  </table>
+</section>
+<% } else { %>
+<section class="card narrow-card">
+  <h2>No pages yet</h2>
+  <p>Create the first page of this handbook.</p>
+</section>
+<% } %>
+
+<p><a class="btn btn-primary" href="/admin/pages/<%= handbook.id %>/new">+ New page</a>
+   <a class="btn btn-ghost" href="/admin">← Dashboard</a></p>
+
+<%- include('../partials/footer') %>
