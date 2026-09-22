@@ -1,5 +1,7 @@
 # School Handbooks 📚
 
+![Release](https://img.shields.io/github/v/release/Mixj73IT/school-handbooks) ![License](https://img.shields.io/github/license/Mixj73IT/school-handbooks) ![Tests](https://img.shields.io/badge/tests-13%2F13-brightgreen)
+
 Self-hosted handbook publishing for schools — three handbooks (**Parent & Student**,
 **Employee**, **Athletics**), markdown editing for staff, and a clean, searchable,
 read-only site for parents. Run it on a $5 server. Own it outright. No subscriptions.
